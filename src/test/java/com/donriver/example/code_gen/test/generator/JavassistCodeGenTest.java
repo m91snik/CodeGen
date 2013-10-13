@@ -13,7 +13,7 @@ import com.donriver.example.code_gen.test.generator.protocol.TestRequest2;
 import com.donriver.example.code_gen.test.generator.protocol.TestResponse;
 import com.donriver.example.code_gen.test.generator.proxy.TestCgLibProxy;
 import com.donriver.example.code_gen.test.generator.proxy.TestJavassistProxy;
-import com.donriver.example.code_gen.test.generator.target.TestTarget;
+import com.donriver.example.code_gen.test.generator.test_target.TestTarget;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,8 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import javax.inject.Inject;
-import javax.inject.Named;
 import java.lang.reflect.Method;
 
 @RunWith(SpringJUnit4ClassRunner.class)
