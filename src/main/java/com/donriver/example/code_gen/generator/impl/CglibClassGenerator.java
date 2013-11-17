@@ -11,10 +11,11 @@ import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 
 public class CglibClassGenerator {
 
-    public Object generate(final Object targetClass, final Class proxyInterfaceClass) throws Exception {
+    public Object generate(final Object targetClass, final Class proxyInterfaceClass) {
 
         Enhancer enhancer = new Enhancer();
         enhancer.setInterfaces(new Class[]{proxyInterfaceClass});
@@ -31,10 +32,9 @@ public class CglibClassGenerator {
         Method[] proxyDeclaredMethods = proxyInterfaceClass.getDeclaredMethods();
         final Method[] targetDeclaredMethods = targetClass.getClass().getDeclaredMethods();
         MethodInterceptor[] methodInterceptors = new MethodInterceptor[proxyDeclaredMethods.length];
-        int idx = 0;
-        for (final Method declaredMethod : proxyDeclaredMethods) {
+        for (int idx = 0; idx < proxyDeclaredMethods.length; idx++) {
             MethodInterceptor methodInterceptor =
-                    createMethodInterceptor(targetClass, targetDeclaredMethods, declaredMethod);
+                    createMethodInterceptor(targetClass, targetDeclaredMethods, proxyDeclaredMethods[idx]);
             methodInterceptors[idx++] = methodInterceptor;
         }
         return methodInterceptors;
@@ -55,17 +55,7 @@ public class CglibClassGenerator {
                                 targetClass, objects);
                     }
                 }
-                throw new UnsupportedOperationException("Method is not supported");
-            }
-        };
-    }
-
-    private NamingPolicy createNamingPolicy(final Class proxyInterfaceClass) {
-        return new NamingPolicy() {
-            @Override
-            public String getClassName(String name, String enhancerName, Object o, Predicate predicate) {
-                String packageName = name.substring(0, name.lastIndexOf(".") + 1);
-                return packageName + Utils.getProxyImplementationName(proxyInterfaceClass.getSimpleName());
+                throw new IllegalStateException("Method is not supported");
             }
         };
     }
@@ -81,21 +71,17 @@ public class CglibClassGenerator {
     private boolean equalParameterTypes(Method method1, Method method2) {
         Class<?>[] parameterTypes = method1.getParameterTypes();
         Class<?>[] declaredParameterTypes = method2.getParameterTypes();
-        if (parameterTypes.length != declaredParameterTypes.length) {
-            return false;
-        }
-        for (Class parameterType : parameterTypes) {
-            boolean hasExpectedParameterType = false;
-            for (Class declaredParameterType : declaredParameterTypes) {
-                if (parameterType.equals(declaredParameterType)) {
-                    hasExpectedParameterType = true;
-                    break;
-                }
-            }
-            if (!hasExpectedParameterType) {
-                return false;
-            }
-        }
-        return true;
+        return Arrays.equals(parameterTypes, declaredParameterTypes);
     }
+
+    private NamingPolicy createNamingPolicy(final Class proxyInterfaceClass) {
+        return new NamingPolicy() {
+            @Override
+            public String getClassName(String name, String enhancerName, Object o, Predicate predicate) {
+                String packageName = name.substring(0, name.lastIndexOf(".") + 1);
+                return packageName + Utils.getProxyImplementationName(proxyInterfaceClass.getSimpleName());
+            }
+        };
+    }
+
 }

@@ -24,6 +24,7 @@ public class JavassistClassRegistrator implements ApplicationListener<ContextRef
 
     @Autowired
     private JavassistClassGenerator classGenerator;
+
     private Map<Object, String> targetImplToProxyMap;
     private ApplicationContext applicationContext;
 
@@ -44,8 +45,7 @@ public class JavassistClassRegistrator implements ApplicationListener<ContextRef
                         (BeanDefinitionRegistry) applicationContext.getAutowireCapableBeanFactory();
                 beanDefinitionRegistry.registerBeanDefinition(proxyClassImplName, beanDefinition);
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException("Cannot generate web facades", e);
         }
     }

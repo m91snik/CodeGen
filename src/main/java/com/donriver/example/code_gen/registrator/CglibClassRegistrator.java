@@ -23,6 +23,7 @@ public class CglibClassRegistrator implements ApplicationListener<ContextRefresh
 
     @Autowired
     private CglibClassGenerator classGenerator;
+
     private Map<Object, String> targetImplToProxyMap;
     private ApplicationContext applicationContext;
 
@@ -43,8 +44,7 @@ public class CglibClassRegistrator implements ApplicationListener<ContextRefresh
                 beanRegistry.registerSingleton(proxyClassImplName, proxyImpl);
 
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException("Cannot generate proxy", e);
         }
     }
