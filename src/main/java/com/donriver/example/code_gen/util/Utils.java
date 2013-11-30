@@ -8,7 +8,16 @@ import org.reflections.ReflectionUtils;
 import org.reflections.Reflections;
 import org.reflections.scanners.AbstractScanner;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.security.AccessController;
+import java.security.PrivilegedExceptionAction;
+import java.util.Arrays;
+
 public class Utils {
+
+    private static final String DEFINE_CLASS = "defineClass";
+    private static final Class[] PARAMETER_TYPES = new Class[]{String.class, byte[].class, int.class, int.class};
 
     public static String getProxyImplementationName(String proxyInterfaceName) {
         return proxyInterfaceName + "Impl";
@@ -38,5 +47,34 @@ public class Utils {
             return ReflectionUtils.forName(foundFacadeName, Thread.currentThread().getContextClassLoader());
         }
         throw new ClassNotFoundException("Cannot find appropriate class for " + className);
+    }
+
+    public static Class toClass(String name, byte[] bytes, ClassLoader classLoader) throws java.security.PrivilegedActionException, IllegalAccessException, InvocationTargetException {
+        Method defineClass = Utils.getDefineClassMethod(classLoader);
+        defineClass.setAccessible(true);
+
+        Object result = defineClass.invoke(classLoader, name, bytes, 0, bytes.length);
+        defineClass.setAccessible(true);
+        return (Class) result;
+    }
+
+    private static Method getDefineClassMethod(final ClassLoader classLoader) throws java.security.PrivilegedActionException {
+        return (Method) AccessController.doPrivileged(new PrivilegedExceptionAction() {
+            public Object run() throws Exception {
+                Class aClass = findNearestClassWithDefineClassMethod(classLoader.getClass());
+                return aClass.getDeclaredMethod(DEFINE_CLASS, PARAMETER_TYPES);
+            }
+
+            private Class findNearestClassWithDefineClassMethod(Class clz) {
+                for (Method m : clz.getDeclaredMethods()) {
+                    if (DEFINE_CLASS.equals(m.getName())) {
+                        if (Arrays.equals(PARAMETER_TYPES, m.getParameterTypes())) {
+                            return clz;
+                        }
+                    }
+                }
+                return findNearestClassWithDefineClassMethod(clz.getSuperclass());
+            }
+        });
     }
 }

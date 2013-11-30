@@ -14,8 +14,10 @@ import javassist.bytecode.*;
 import javassist.bytecode.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.security.ProtectionDomain;
+import java.security.PrivilegedActionException;
 
 public class JavassistClassGenerator {
 
@@ -36,7 +38,7 @@ public class JavassistClassGenerator {
      */
     public Class generate(Class targetClass, Class proxyInterfaceClass) throws CannotCompileException,
             InstantiationException, NotFoundException, IllegalAccessException, NoSuchMethodException,
-            ClassNotFoundException {
+            ClassNotFoundException, PrivilegedActionException, IOException, InvocationTargetException {
         ClassPool pool = getClassPool(proxyInterfaceClass);
 
         CtClass proxyImplCtClass = createProxyImplCtClass(proxyInterfaceClass, pool);
@@ -47,7 +49,7 @@ public class JavassistClassGenerator {
 
         addClassAnnotations(targetClass, pool, proxyImplCtClass);
 
-        return convertToClass(proxyImplCtClass);
+        return convertToClass(proxyImplCtClass, targetClass);
     }
 
     private ClassPool getClassPool(Class proxyInterfaceClass) {
@@ -168,11 +170,13 @@ public class JavassistClassGenerator {
      * @return
      * @throws CannotCompileException
      */
-    private Class convertToClass(CtClass proxyImplCtClass) throws CannotCompileException {
-        Thread thread = Thread.currentThread();
-        ClassLoader loader = thread.getContextClassLoader();
-        ProtectionDomain protectionDomain = thread.getClass().getProtectionDomain();
-
-        return proxyImplCtClass.toClass(loader, protectionDomain);
+    private Class convertToClass(CtClass proxyImplCtClass, Class targetClass) throws CannotCompileException,
+            IOException, IllegalAccessException, PrivilegedActionException, InvocationTargetException {
+//        Thread thread = Thread.currentThread();
+//        ClassLoader loader = thread.getContextClassLoader();
+//        ProtectionDomain protectionDomain = thread.getClass().getProtectionDomain();
+//
+//        return proxyImplCtClass.toClass(loader, protectionDomain);
+        return Utils.toClass(proxyImplCtClass.getName(), proxyImplCtClass.toBytecode(), targetClass.getClassLoader());
     }
 }
