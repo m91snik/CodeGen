@@ -5,9 +5,7 @@
  */
 package com.donriver.example.code_gen.generator.impl;
 
-import com.donriver.example.code_gen.annotation.GenClassAnnotation;
-import com.donriver.example.code_gen.annotation.GenEnum;
-import com.donriver.example.code_gen.annotation.GenMethodAnnotation;
+import com.donriver.example.code_gen.util.AnnotationResolver;
 import com.donriver.example.code_gen.util.Utils;
 import javassist.*;
 import javassist.bytecode.*;
@@ -15,11 +13,15 @@ import javassist.bytecode.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.PrivilegedActionException;
 
 public class JavassistClassGenerator {
+
+    @Autowired
+    private AnnotationResolver annotationResolver;
 
     public static final String TARGET_INSTANCE_NAME = "target";
 
@@ -43,11 +45,11 @@ public class JavassistClassGenerator {
 
         CtClass proxyImplCtClass = createProxyImplCtClass(proxyInterfaceClass, pool);
 
+        addClassAnnotations(targetClass, proxyImplCtClass);
+
         addTargetField(targetClass, pool, proxyImplCtClass);
 
-        addProxyMethods(proxyInterfaceClass, pool, proxyImplCtClass);
-
-        addClassAnnotations(targetClass, pool, proxyImplCtClass);
+        addProxyMethods(targetClass, pool, proxyImplCtClass);
 
         return Utils.defineClass(proxyImplCtClass.getName(), proxyImplCtClass.toBytecode(),
                                  targetClass.getClassLoader());
@@ -59,70 +61,92 @@ public class JavassistClassGenerator {
         return pool;
     }
 
-    private void addClassAnnotations(Class targetClass, ClassPool pool, CtClass proxyImplCtClass)
-            throws NotFoundException {
+    private void addClassAnnotations(Class targetClass, CtClass proxyImplCtClass)
+            throws NotFoundException, InvocationTargetException, IllegalAccessException {
         ClassFile classFile = proxyImplCtClass.getClassFile();
-        ConstPool constPool = classFile.getConstPool();
+        classFile.setVersionToJava5();
 
+        ConstPool constPool = classFile.getConstPool();
         AnnotationsAttribute annotationsAttribute =
                 new AnnotationsAttribute(constPool, AnnotationsAttribute.visibleTag);
-
-        Annotation annotation = generateGenClassAnnotation(targetClass, pool, constPool);
-
-        annotationsAttribute.addAnnotation(annotation);
+        for (java.lang.annotation.Annotation targetAnnotation : targetClass.getAnnotations()) {
+            if (annotationResolver.ignoreAnnotation(targetAnnotation)) {
+                continue;
+            }
+            Annotation annotation = generateAnnotation(targetAnnotation, constPool);
+            annotationsAttribute.addAnnotation(annotation);
+        }
         classFile.addAttribute(annotationsAttribute);
-        classFile.setVersionToJava5();
     }
 
-    private Annotation generateGenClassAnnotation(Class targetClass, ClassPool pool, ConstPool constPool)
-            throws NotFoundException {
-        Annotation annotation = new Annotation(constPool, pool.get(GenClassAnnotation.class.getName()));
-        GenClassAnnotation classAnnotation = (GenClassAnnotation) targetClass.getAnnotation
-                (GenClassAnnotation.class);
-        annotation.addMemberValue("serviceName", new StringMemberValue(classAnnotation.serviceName(), constPool));
-        ArrayMemberValue loggingChannels = new ArrayMemberValue(constPool);
-        MemberValue[] elements = new MemberValue[classAnnotation.loggingChannels().length];
-        for (int idx = 0; idx < elements.length; idx++) {
-            String channelName = classAnnotation.loggingChannels()[0];
-            elements[idx] = new StringMemberValue(channelName, constPool);
+    private Annotation generateAnnotation(java.lang.annotation.Annotation targetAnnotation, ConstPool constPool)
+            throws NotFoundException, InvocationTargetException, IllegalAccessException {
+        //NOTE: it's needed to use this constructor. Annotation(ConstPool cp, CtClass clazz) not supports enums
+        Annotation annotation = new Annotation(targetAnnotation.annotationType().getName(), constPool);
+        for (Method targetAnnotationMethod : targetAnnotation.annotationType().getDeclaredMethods()) {
+            Class<?> returnType = targetAnnotationMethod.getReturnType();
+            Object annotationMethodValue = targetAnnotationMethod.invoke(targetAnnotation);
+            MemberValue memberValue = resolveAnnotationMemberValue(constPool, returnType, annotationMethodValue);
+            annotation.addMemberValue(targetAnnotationMethod.getName(), memberValue);
         }
-        loggingChannels.setValue(elements);
-        annotation.addMemberValue("loggingChannels", loggingChannels);
         return annotation;
     }
 
-    private void addProxyMethods(Class<?> proxyInterfaceClass, ClassPool pool, CtClass proxyImplCtClass)
-            throws NotFoundException, CannotCompileException {
-        for (Method method : proxyInterfaceClass.getDeclaredMethods()) {
+    //TODO: just show case. for practical purposes it should be implemented in strategies instead of ifs
+    private MemberValue resolveAnnotationMemberValue(ConstPool constPool, Class<?> annotationMemberType, Object annotationMethodValue) {
+        if (String.class.equals(annotationMemberType)) {
+            return new StringMemberValue((String) annotationMethodValue, constPool);
+        } else if (annotationMemberType.isArray()) {
+            ArrayMemberValue arrayMemberValue = new ArrayMemberValue(constPool);
+            MemberValue[] elements = new MemberValue[Array.getLength(annotationMethodValue)];
+            for (int idx = 0; idx < elements.length; idx++) {
+                Object arrayMemberValueElement = Array.get(annotationMethodValue, idx);
+                if (arrayMemberValueElement instanceof String) {
+                    elements[idx] = new StringMemberValue((String) arrayMemberValueElement, constPool);
+                } else {
+                    throw new IllegalArgumentException(annotationMemberType + " is not supported");
+                }
+            }
+            arrayMemberValue.setValue(elements);
+            return arrayMemberValue;
+        } else if (annotationMemberType.isEnum()) {
+            EnumMemberValue enumMemberValue = new EnumMemberValue(constPool);
+            enumMemberValue.setType(annotationMemberType.getName());
+            enumMemberValue.setValue(annotationMethodValue.toString());
+            return enumMemberValue;
+        }
+        throw new IllegalArgumentException(annotationMemberType + " is not supported");
+    }
+
+    private void addProxyMethods(Class<?> targetClass, ClassPool pool, CtClass proxyImplCtClass)
+            throws NotFoundException, CannotCompileException, InvocationTargetException, IllegalAccessException {
+        for (Method method : targetClass.getDeclaredMethods()) {
             CtMethod ctMethod = createProxyMethod(pool, proxyImplCtClass, method);
 
-            addMethodAnnotations(ctMethod);
+            addMethodAnnotations(ctMethod, method);
 
             proxyImplCtClass.addMethod(ctMethod);
         }
     }
 
-    private void addMethodAnnotations(CtMethod ctMethod) {
+    private void addMethodAnnotations(CtMethod ctMethod, Method method) throws IllegalAccessException,
+            NotFoundException,
+            InvocationTargetException {
         //NOTE: you can add only Runtime annotations
         MethodInfo methodInfo = ctMethod.getMethodInfo();
 
         ConstPool constPool = methodInfo.getConstPool();
         AnnotationsAttribute annotationsAttribute =
                 new AnnotationsAttribute(constPool, AnnotationsAttribute.visibleTag);
-        Annotation annotation = generateGenMethodAnnotation(constPool);
-        annotationsAttribute.addAnnotation(annotation);
+        for (java.lang.annotation.Annotation targetAnnotation : method.getAnnotations()) {
+            if (annotationResolver.ignoreAnnotation(targetAnnotation)) {
+                continue;
+            }
+            Annotation annotation = generateAnnotation(targetAnnotation, constPool);
+            annotationsAttribute.addAnnotation(annotation);
+        }
 
         methodInfo.addAttribute(annotationsAttribute);
-    }
-
-    private Annotation generateGenMethodAnnotation(ConstPool constPool) {
-        EnumMemberValue enumMemberValue = new EnumMemberValue(constPool);
-        enumMemberValue.setType(GenEnum.class.getName());
-        enumMemberValue.setValue(GenEnum.SECOND.name());
-        //NOTE: it's needed to use this constructor. Annotation(ConstPool cp, CtClass clazz) not supports enums
-        Annotation annotation = new Annotation(GenMethodAnnotation.class.getName(), constPool);
-        annotation.addMemberValue("genEnum", enumMemberValue);
-        return annotation;
     }
 
     private CtMethod createProxyMethod(ClassPool pool, CtClass proxyImplCtClass, Method method)

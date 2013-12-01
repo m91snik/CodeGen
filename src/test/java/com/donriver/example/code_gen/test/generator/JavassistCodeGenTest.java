@@ -5,9 +5,8 @@
  */
 package com.donriver.example.code_gen.test.generator;
 
-import com.donriver.example.code_gen.annotation.GenClassAnnotation;
-import com.donriver.example.code_gen.annotation.GenEnum;
-import com.donriver.example.code_gen.annotation.GenMethodAnnotation;
+import com.donriver.example.code_gen.test.generator.annotation.GenClassAnnotation;
+import com.donriver.example.code_gen.test.generator.annotation.GenMethodAnnotation;
 import com.donriver.example.code_gen.test.generator.protocol.TestRequest;
 import com.donriver.example.code_gen.test.generator.protocol.TestRequest2;
 import com.donriver.example.code_gen.test.generator.protocol.TestResponse;
@@ -65,13 +64,18 @@ public class JavassistCodeGenTest {
 
     private void assertProxyMethodsAnnotations() {
         Method[] interfaceMethods = TestCgLibProxy.class.getDeclaredMethods();
+        Method[] targetInterfaceMethods = TestTarget.class.getDeclaredMethods();
+
         for (Method method : testProxy.getClass().getDeclaredMethods()) {
             if (!TestUtils.isOverriddenMethod(method, interfaceMethods)) {
                 continue;
             }
             GenMethodAnnotation annotation = method.getAnnotation(GenMethodAnnotation.class);
             Assert.assertNotNull(annotation);
-            Assert.assertEquals(GenEnum.SECOND, annotation.genEnum());
+            Method targetMethod = TestUtils.getOverridenMethodFromClazz(method, testTarget.getClass(),
+                                                                        targetInterfaceMethods);
+            GenMethodAnnotation targetAnnotation = targetMethod.getAnnotation(GenMethodAnnotation.class);
+            Assert.assertEquals(targetAnnotation.genEnum(), annotation.genEnum());
         }
     }
 

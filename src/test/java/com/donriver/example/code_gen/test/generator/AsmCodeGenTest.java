@@ -1,16 +1,13 @@
 package com.donriver.example.code_gen.test.generator;
 
-import com.donriver.example.code_gen.annotation.GenClassAnnotation;
-import com.donriver.example.code_gen.annotation.GenEnum;
-import com.donriver.example.code_gen.annotation.GenMethodAnnotation;
+import com.donriver.example.code_gen.test.generator.annotation.GenClassAnnotation;
+import com.donriver.example.code_gen.test.generator.annotation.GenMethodAnnotation;
 import com.donriver.example.code_gen.test.generator.protocol.TestRequest;
 import com.donriver.example.code_gen.test.generator.protocol.TestRequest2;
 import com.donriver.example.code_gen.test.generator.protocol.TestResponse;
 import com.donriver.example.code_gen.test.generator.proxy.TestAsmProxy;
-import com.donriver.example.code_gen.test.generator.proxy.TestCgLibProxy;
 import com.donriver.example.code_gen.test.generator.test_target.TestTarget;
 import com.donriver.example.code_gen.test.generator.utils.TestUtils;
-import com.donriver.example.code_gen.util.Utils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -70,23 +67,11 @@ public class AsmCodeGenTest {
             }
             GenMethodAnnotation annotation = method.getAnnotation(GenMethodAnnotation.class);
             Assert.assertNotNull(annotation);
-            Method targetMethod = getOverridenMethod(method, targetInterfaceMethods);
+            Method targetMethod = TestUtils.getOverridenMethodFromClazz(method, testTarget.getClass(),
+                                                                        targetInterfaceMethods);
             GenMethodAnnotation targetAnnotation = targetMethod.getAnnotation(GenMethodAnnotation.class);
             Assert.assertEquals(targetAnnotation.genEnum(), annotation.genEnum());
         }
     }
 
-    private Method getOverridenMethod(Method method, Method[] targetInterfaceMethods) {
-        for (Method targetMethod : testTarget.getClass().getDeclaredMethods()) {
-            if (!TestUtils.isOverriddenMethod(targetMethod, targetInterfaceMethods)) {
-                continue;
-            }
-            if (!Utils.essentiallyEqualMethods(method, targetMethod)) {
-                continue;
-            }
-            return targetMethod;
-        }
-        throw new IllegalStateException("Method " + method + "is not found in target methods " +
-                                                targetInterfaceMethods);
-    }
 }

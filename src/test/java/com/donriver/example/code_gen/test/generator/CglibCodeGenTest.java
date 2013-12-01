@@ -5,9 +5,9 @@
  */
 package com.donriver.example.code_gen.test.generator;
 
-import com.donriver.example.code_gen.annotation.GenClassAnnotation;
-import com.donriver.example.code_gen.annotation.GenEnum;
-import com.donriver.example.code_gen.annotation.GenMethodAnnotation;
+import com.donriver.example.code_gen.test.generator.annotation.GenClassAnnotation;
+import com.donriver.example.code_gen.test.generator.annotation.GenEnum;
+import com.donriver.example.code_gen.test.generator.annotation.GenMethodAnnotation;
 import com.donriver.example.code_gen.test.generator.protocol.TestRequest;
 import com.donriver.example.code_gen.test.generator.protocol.TestRequest2;
 import com.donriver.example.code_gen.test.generator.protocol.TestResponse;

@@ -3,6 +3,7 @@
  */
 package com.donriver.example.code_gen.generator.impl;
 
+import com.donriver.example.code_gen.util.AnnotationResolver;
 import com.donriver.example.code_gen.util.Utils;
 import org.objectweb.asm.*;
 import org.objectweb.asm.util.CheckClassAdapter;
@@ -16,6 +17,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public class AsmClassGenerator {
+
+    @Autowired
+    private AnnotationResolver annotationResolver;
 
     public Class generate(Class targetClass, Class proxyInterfaceClass) throws Exception {
         //Assume that target has only one interface
@@ -31,14 +35,7 @@ public class AsmClassGenerator {
         classWriter.visit(Opcodes.V1_6, Opcodes.ACC_PUBLIC, proxyImplName, null,
                           Type.getInternalName(Object.class), new String[]{asmProxyName});
 
-        for (Annotation annotation : targetClass.getAnnotations()) {
-            Class<? extends Annotation> annotationClass = annotation.annotationType();
-
-            AnnotationVisitor annotationVisitor =
-                    classWriter.visitAnnotation(Type.getDescriptor(annotationClass), true);
-            fillAnnotationByValues(annotationVisitor, annotation);
-            annotationVisitor.visitEnd();
-        }
+        addClassAnnotations(targetClass, classWriter);
 
         createTargetField(targetInterfaceClass, classWriter);
 
@@ -49,10 +46,22 @@ public class AsmClassGenerator {
         classWriter.visitEnd();
 
         final byte[] bytes = rawClassWriter.toByteArray();
-
         final ClassLoader classLoader = targetClass.getClassLoader();
-
         return Utils.defineClass(proxyImplName.replace("/", "."), bytes, classLoader);
+    }
+
+    private void addClassAnnotations(Class targetClass, CheckClassAdapter classWriter) throws IllegalAccessException,
+            InvocationTargetException {
+        for (Annotation targetAnnotation : targetClass.getAnnotations()) {
+            if (annotationResolver.ignoreAnnotation(targetAnnotation)) {
+                continue;
+            }
+            Class<? extends Annotation> annotationClass = targetAnnotation.annotationType();
+            AnnotationVisitor annotationVisitor =
+                    classWriter.visitAnnotation(Type.getDescriptor(annotationClass), true);
+            fillAnnotationByValues(annotationVisitor, targetAnnotation);
+            annotationVisitor.visitEnd();
+        }
     }
 
     private void addProxyMethods(Class targetClass, Class targetInterfaceClass, Class proxyInterfaceClass,

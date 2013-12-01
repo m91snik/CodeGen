@@ -1,7 +1,7 @@
 package com.donriver.example.code_gen.test.generator.test_target.impl;
 
-import com.donriver.example.code_gen.annotation.GenClassAnnotation;
-import com.donriver.example.code_gen.annotation.GenMethodAnnotation;
+import com.donriver.example.code_gen.test.generator.annotation.GenClassAnnotation;
+import com.donriver.example.code_gen.test.generator.annotation.GenMethodAnnotation;
 import com.donriver.example.code_gen.test.generator.component.Calculator;
 import com.donriver.example.code_gen.test.generator.protocol.TestRequest;
 import com.donriver.example.code_gen.test.generator.protocol.TestRequest2;
