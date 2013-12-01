@@ -49,7 +49,8 @@ public class JavassistClassGenerator {
 
         addClassAnnotations(targetClass, pool, proxyImplCtClass);
 
-        return convertToClass(proxyImplCtClass, targetClass);
+        return Utils.defineClass(proxyImplCtClass.getName(), proxyImplCtClass.toBytecode(),
+                                 targetClass.getClassLoader());
     }
 
     private ClassPool getClassPool(Class proxyInterfaceClass) {
@@ -163,20 +164,5 @@ public class JavassistClassGenerator {
         return proxyImplCtClass;
     }
 
-    /**
-     * Converts {@link javassist.CtClass} to {@link java.lang.Class}
-     *
-     * @param proxyImplCtClass
-     * @return
-     * @throws CannotCompileException
-     */
-    private Class convertToClass(CtClass proxyImplCtClass, Class targetClass) throws CannotCompileException,
-            IOException, IllegalAccessException, PrivilegedActionException, InvocationTargetException {
-//        Thread thread = Thread.currentThread();
-//        ClassLoader loader = thread.getContextClassLoader();
-//        ProtectionDomain protectionDomain = thread.getClass().getProtectionDomain();
-//
-//        return proxyImplCtClass.toClass(loader, protectionDomain);
-        return Utils.toClass(proxyImplCtClass.getName(), proxyImplCtClass.toBytecode(), targetClass.getClassLoader());
-    }
+
 }

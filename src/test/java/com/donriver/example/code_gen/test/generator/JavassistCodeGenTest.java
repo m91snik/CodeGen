@@ -14,6 +14,7 @@ import com.donriver.example.code_gen.test.generator.protocol.TestResponse;
 import com.donriver.example.code_gen.test.generator.proxy.TestCgLibProxy;
 import com.donriver.example.code_gen.test.generator.proxy.TestJavassistProxy;
 import com.donriver.example.code_gen.test.generator.test_target.TestTarget;
+import com.donriver.example.code_gen.test.generator.utils.TestUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -65,7 +66,7 @@ public class JavassistCodeGenTest {
     private void assertProxyMethodsAnnotations() {
         Method[] interfaceMethods = TestCgLibProxy.class.getDeclaredMethods();
         for (Method method : testProxy.getClass().getDeclaredMethods()) {
-            if (!isOverriddenMethod(method, interfaceMethods)) {
+            if (!TestUtils.isOverriddenMethod(method, interfaceMethods)) {
                 continue;
             }
             GenMethodAnnotation annotation = method.getAnnotation(GenMethodAnnotation.class);
@@ -74,13 +75,4 @@ public class JavassistCodeGenTest {
         }
     }
 
-    private boolean isOverriddenMethod(Method method, Method[] interfaceMethods) {
-        String methodName = method.getName();
-        for (Method interfaceMethod : interfaceMethods) {
-            if (methodName.equals(interfaceMethod.getName())) {
-                return true;
-            }
-        }
-        return false;
-    }
 }

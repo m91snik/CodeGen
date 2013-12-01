@@ -11,6 +11,6 @@ import com.donriver.example.code_gen.test.generator.protocol.TestResponse;
 
 public interface TestTarget {
 
-    public abstract TestResponse doTestRequest(TestRequest testRequest, TestRequest2 testRequest2);
+   TestResponse doTestRequest(TestRequest testRequest, TestRequest2 testRequest2);
 
 }

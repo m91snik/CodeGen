@@ -49,7 +49,7 @@ public class Utils {
         throw new ClassNotFoundException("Cannot find appropriate class for " + className);
     }
 
-    public static Class toClass(String name, byte[] bytes, ClassLoader classLoader) throws java.security.PrivilegedActionException, IllegalAccessException, InvocationTargetException {
+    public static Class defineClass(String name, byte[] bytes, ClassLoader classLoader) throws java.security.PrivilegedActionException, IllegalAccessException, InvocationTargetException {
         Method defineClass = Utils.getDefineClassMethod(classLoader);
         defineClass.setAccessible(true);
 
@@ -76,5 +76,19 @@ public class Utils {
                 return findNearestClassWithDefineClassMethod(clz.getSuperclass());
             }
         });
+    }
+
+    public static boolean essentiallyEqualMethods(Method method1, Method method2) {
+        // it's needed that methods have the same name and parameters types
+        boolean equalNames = method1.getName().equals(method2.getName());
+        boolean equalReturnTypes = method1.getGenericReturnType().equals(method2.getGenericReturnType());
+        boolean equalParameters = equalParameterTypes(method1, method2);
+        return equalNames && equalReturnTypes && equalParameters;
+    }
+
+    private static boolean equalParameterTypes(Method method1, Method method2) {
+        Class<?>[] parameterTypes = method1.getParameterTypes();
+        Class<?>[] declaredParameterTypes = method2.getParameterTypes();
+        return Arrays.equals(parameterTypes, declaredParameterTypes);
     }
 }

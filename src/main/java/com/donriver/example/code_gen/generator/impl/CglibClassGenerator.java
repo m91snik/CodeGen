@@ -11,7 +11,6 @@ import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
 
 import java.lang.reflect.Method;
-import java.util.Arrays;
 
 public class CglibClassGenerator {
 
@@ -50,7 +49,7 @@ public class CglibClassGenerator {
                     return methodProxy.invokeSuper(o, objects);
                 }
                 for (Method localServiceDeclaredMethod : targetDeclaredMethods) {
-                    if (essentiallyEqualMethods(localServiceDeclaredMethod, declaredMethod)) {
+                    if (Utils.essentiallyEqualMethods(localServiceDeclaredMethod, declaredMethod)) {
                         return org.springframework.util.ReflectionUtils.invokeMethod(localServiceDeclaredMethod,
                                 targetClass, objects);
                     }
@@ -60,19 +59,7 @@ public class CglibClassGenerator {
         };
     }
 
-    private boolean essentiallyEqualMethods(Method method1, Method method2) {
-        // it's needed that methods have the same name and parameters types
-        boolean equalNames = method1.getName().equals(method2.getName());
-        boolean equalReturnTypes = method1.getGenericReturnType().equals(method2.getGenericReturnType());
-        boolean equalParameters = equalParameterTypes(method1, method2);
-        return equalNames && equalReturnTypes && equalParameters;
-    }
 
-    private boolean equalParameterTypes(Method method1, Method method2) {
-        Class<?>[] parameterTypes = method1.getParameterTypes();
-        Class<?>[] declaredParameterTypes = method2.getParameterTypes();
-        return Arrays.equals(parameterTypes, declaredParameterTypes);
-    }
 
     private NamingPolicy createNamingPolicy(final Class proxyInterfaceClass) {
         return new NamingPolicy() {
