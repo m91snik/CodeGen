@@ -35,8 +35,6 @@ public class JavassistCodeGenTest {
 
     @Test
     public void testWebServiceFacadeGenerator() throws Exception {
-        String encode = URLEncoder.encode("What is BlazeMeter's Load Testing Cloud?", "UTF-8");
-        System.out.println(encode);
         assertMethodWorking();
         assertProxyClassName();
         assertProxyAnnotations();

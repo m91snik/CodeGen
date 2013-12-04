@@ -120,9 +120,8 @@
                 <configuration>
                     <forkMode>once</forkMode>
                     <argLine>
-                        -javaagent:"${settings.localRepository}/org/springframework/spring-instrument/${spring.framework.version}/spring-instrument-${spring.framework.version}.jar"
+                        -javaagent:"${settings.localRepository}/org/springframework/spring-instrument/${spring.version}/spring-instrument-${spring.version}.jar"
                     </argLine>
-                    <useSystemClassloader>true</useSystemClassloader>
                 </configuration>
             </plugin>
         </plugins>

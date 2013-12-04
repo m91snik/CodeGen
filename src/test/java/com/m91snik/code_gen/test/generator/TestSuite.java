@@ -11,7 +11,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
-@Suite.SuiteClasses({CglibCodeGenTest.class,JavassistCodeGenTest.class, AsmCodeGenTest.class})
+@Suite.SuiteClasses({JavassistCodeGenTest.class, AsmCodeGenTest.class, CglibCodeGenTest.class})
 public class TestSuite {
 
 }
