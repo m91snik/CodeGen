@@ -40,7 +40,7 @@ public class AsmCodeGenTest {
 
     private void assertMethodWorking() throws TestException {
         TestResponse testResponse = testProxy.doTestRequest(new TestRequest(1), new TestRequest2(2));
-        Assert.assertEquals(3, testResponse.anInt);
+        Assert.assertEquals(5, testResponse.anInt);
     }
 
     private void assertProxyClassName() {

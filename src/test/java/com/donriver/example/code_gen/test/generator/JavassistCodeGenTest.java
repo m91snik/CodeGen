@@ -22,6 +22,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.lang.reflect.Method;
+import java.net.URLEncoder;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = {"classpath:spring/services/generator/javassist-test-root.xml"})
@@ -34,6 +35,8 @@ public class JavassistCodeGenTest {
 
     @Test
     public void testWebServiceFacadeGenerator() throws Exception {
+        String encode = URLEncoder.encode("What is BlazeMeter's Load Testing Cloud?", "UTF-8");
+        System.out.println(encode);
         assertMethodWorking();
         assertProxyClassName();
         assertProxyAnnotations();
@@ -48,10 +51,9 @@ public class JavassistCodeGenTest {
     private void assertMethodWorking() throws TestException {
         TestRequest testRequest = new TestRequest(1);
         TestRequest2 testRequest2 = new TestRequest2(2);
-        TestResponse expectedTestResponse = testTarget.doTestRequest(testRequest, testRequest2);
         TestResponse testResponse = testProxy.doTestRequest(testRequest, testRequest2);
 
-        Assert.assertEquals(expectedTestResponse, testResponse);
+        Assert.assertEquals(5, testResponse.anInt);
     }
 
     private void assertProxyAnnotations() {

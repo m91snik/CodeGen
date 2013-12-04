@@ -8,6 +8,13 @@ package com.donriver.example.code_gen.test.generator.protocol;
 public class TestResponse {
     public int anInt;
 
+    public TestResponse() {
+    }
+
+    public TestResponse(int anInt) {
+        this.anInt = anInt;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {

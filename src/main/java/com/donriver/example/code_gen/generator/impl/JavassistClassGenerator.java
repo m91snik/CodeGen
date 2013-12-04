@@ -121,7 +121,17 @@ public class JavassistClassGenerator {
     private void addProxyMethods(Class<?> targetClass, ClassPool pool, CtClass proxyImplCtClass)
             throws NotFoundException, CannotCompileException, InvocationTargetException, IllegalAccessException {
         for (Method method : targetClass.getDeclaredMethods()) {
-            CtMethod ctMethod = createProxyMethod(pool, proxyImplCtClass, method);
+            Method targetInterfaceMethod = null;
+            for (Method method1 : targetClass.getInterfaces()[0].getDeclaredMethods()) {
+                if (Utils.essentiallyEqualMethods(method, method1)) {
+                    targetInterfaceMethod = method1;
+                    break;
+                }
+            }
+            if (targetInterfaceMethod == null) {
+                continue;
+            }
+            CtMethod ctMethod = createProxyMethod(pool, proxyImplCtClass, targetInterfaceMethod);
 
             addMethodAnnotations(ctMethod, method);
 
