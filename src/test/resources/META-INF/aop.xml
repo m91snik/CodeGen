@@ -2,9 +2,9 @@
 
 <aspectj>
     <weaver>
-        <include within="com.donriver.example.code_gen.test..*" />
+        <include within="com.m91snik.code_gen.test..*" />
     </weaver>
     <aspects>
-        <aspect name="com.donriver.example.code_gen.test.generator.aspect.GenMethodAspect" />
+        <aspect name="com.m91snik.code_gen.test.generator.aspect.GenMethodAspect" />
     </aspects>
 </aspectj>

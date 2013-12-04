@@ -7,12 +7,12 @@
             http://www.springframework.org/schema/context/spring-context-3.2.xsd">
 
     <context:annotation-config/>
-    <context:component-scan base-package="com.donriver.example.code_gen"/>
+    <context:component-scan base-package="com.m91snik.code_gen"/>
     <import resource="aspects-config.xml"/>
 
-    <bean id="classGenerator" class="com.donriver.example.code_gen.generator.impl.JavassistClassGenerator"/>
+    <bean id="classGenerator" class="com.m91snik.code_gen.generator.impl.JavassistClassGenerator"/>
 
-    <bean id="classRegistrator" class="com.donriver.example.code_gen.registrator.JavassistClassRegistrator">
+    <bean id="classRegistrator" class="com.m91snik.code_gen.registrator.JavassistClassRegistrator">
         <property name="targetImplToProxyMap">
             <map key-type="java.lang.Object" value-type="java.lang.String">
                 <entry key-ref="testTarget" value="TestJavassistProxy"/>
