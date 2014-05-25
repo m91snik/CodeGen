@@ -7,16 +7,15 @@ import com.m91snik.code_gen.test.generator.protocol.TestRequest;
 import com.m91snik.code_gen.test.generator.protocol.TestRequest2;
 import com.m91snik.code_gen.test.generator.protocol.TestResponse;
 import com.m91snik.code_gen.test.generator.test_target.TestTarget;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.inject.Inject;
 import javax.inject.Named;
 
 @Named("testTarget")
 @GenClassAnnotation(serviceName = "TestService", loggingChannels = {"channel1"})
 public class TestTargetImpl implements TestTarget {
 
-    @Inject
-    @Named("calculator")
+    @Autowired
     private Calculator calculator;
 
     @Override

@@ -23,6 +23,6 @@ public class GenMethodAspect {
     public TestResponse doAspect(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
         TestResponse result = (TestResponse) proceedingJoinPoint.proceed();
         System.out.println("Aspect is applied for " + proceedingJoinPoint.getTarget());
-        return new TestResponse(result.anInt + 1);
+        return new TestResponse(result.anInt+1);
     }
 }
