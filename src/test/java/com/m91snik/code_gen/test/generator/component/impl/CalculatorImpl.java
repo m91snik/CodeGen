@@ -6,10 +6,9 @@
 package com.m91snik.code_gen.test.generator.component.impl;
 
 import com.m91snik.code_gen.test.generator.component.Calculator;
+import org.springframework.stereotype.Service;
 
-import javax.inject.Named;
-
-@Named("calculator")
+@Service
 public class CalculatorImpl implements Calculator {
 
     @Override

@@ -1,6 +1,7 @@
 package com.m91snik.code_gen.util;
 
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import javax.inject.Named;
 import java.lang.annotation.Annotation;
