@@ -33,10 +33,8 @@ public class CglibCodeGenTest {
 
     @Test
     public void testWebServiceFacadeGenerator() throws Exception {
-        assertMethodWorking();
+        assertMethodWorkingWithoutAspects();
         assertProxyClassName();
-        //assertProxyAnnotations();
-        //assertProxyMethodsAnnotations();
     }
 
     private void assertProxyClassName() {
@@ -44,42 +42,12 @@ public class CglibCodeGenTest {
         Assert.assertEquals(expectedClassName, testProxy.getClass().getName());
     }
 
-    private void assertMethodWorking() throws TestException {
+    private void assertMethodWorkingWithoutAspects() throws TestException {
         TestRequest testRequest = new TestRequest(1);
         TestRequest2 testRequest2 = new TestRequest2(2);
-        TestResponse expectedTestResponse = testTarget.doTestRequest(testRequest, testRequest2);
         TestResponse testResponse = testProxy.doTestRequest(testRequest, testRequest2);
 
-        Assert.assertEquals(expectedTestResponse, testResponse);
+        Assert.assertEquals(4, testResponse.anInt);
     }
 
-    private void assertProxyAnnotations() {
-        GenClassAnnotation localFacadeBusinessServiceAnnotation =
-                testTarget.getClass().getAnnotation(GenClassAnnotation.class);
-        GenClassAnnotation facadeBusinessServiceAnnotation =
-                testProxy.getClass().getAnnotation(GenClassAnnotation.class);
-        Assert.assertEquals(localFacadeBusinessServiceAnnotation, facadeBusinessServiceAnnotation);
-    }
-
-    private void assertProxyMethodsAnnotations() {
-        Method[] interfaceMethods = TestCgLibProxy.class.getDeclaredMethods();
-        for (Method method : testProxy.getClass().getDeclaredMethods()) {
-            if (!isOverriddenMethod(method, interfaceMethods)) {
-                continue;
-            }
-            GenMethodAnnotation annotation = method.getAnnotation(GenMethodAnnotation.class);
-            Assert.assertNotNull(annotation);
-            Assert.assertEquals(GenEnum.SECOND, annotation.genEnum());
-        }
-    }
-
-    private boolean isOverriddenMethod(Method method, Method[] interfaceMethods) {
-        String methodName = method.getName();
-        for (Method interfaceMethod : interfaceMethods) {
-            if (methodName.equals(interfaceMethod.getName())) {
-                return true;
-            }
-        }
-        return false;
-    }
 }

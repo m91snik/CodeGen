@@ -22,7 +22,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.lang.reflect.Method;
-import java.net.URLEncoder;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = {"classpath:spring/services/generator/javassist-test-root.xml"})
@@ -35,7 +34,7 @@ public class JavassistCodeGenTest {
 
     @Test
     public void testWebServiceFacadeGenerator() throws Exception {
-        assertMethodWorking();
+        assertProxyMethodWorkingWithAspects();
         assertProxyClassName();
         assertProxyAnnotations();
         assertProxyMethodsAnnotations();
@@ -46,7 +45,7 @@ public class JavassistCodeGenTest {
         Assert.assertEquals(expectedClassName, testProxy.getClass().getName());
     }
 
-    private void assertMethodWorking() throws TestException {
+    private void assertProxyMethodWorkingWithAspects() throws TestException {
         TestRequest testRequest = new TestRequest(1);
         TestRequest2 testRequest2 = new TestRequest2(2);
         TestResponse testResponse = testProxy.doTestRequest(testRequest, testRequest2);

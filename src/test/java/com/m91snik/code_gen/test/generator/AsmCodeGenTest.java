@@ -32,13 +32,13 @@ public class AsmCodeGenTest {
 
     @Test
     public void test() throws Exception {
-        assertMethodWorking();
+        assertProxyMethodWorkingWithAspects();
         assertProxyClassName();
         assertProxyAnnotations();
         assertProxyMethodsAnnotations();
     }
 
-    private void assertMethodWorking() throws TestException {
+    private void assertProxyMethodWorkingWithAspects() throws TestException {
         TestResponse testResponse = testProxy.doTestRequest(new TestRequest(1), new TestRequest2(2));
         Assert.assertEquals(5, testResponse.anInt);
     }
